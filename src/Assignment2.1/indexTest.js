@@ -1,5 +1,5 @@
-import React, { useState, useEffect } from 'react';
-import axios from 'axios';
+import React, { useState } from 'react';
+// import axios from 'axios';
 import { TableContainer, TableHead, TableRow, TableBody, Paper } from '@mui/material';
 import Pagination from '@mui/material/Pagination';
 import TableCell, { tableCellClasses } from '@mui/material/TableCell';
@@ -17,7 +17,9 @@ import CustomModal from './Components/CustomModal';
 import Snackbar from '@mui/material/Snackbar';
 import MuiAlert from '@mui/material/Alert';
 import CustomTable from './Components/CustomTable';
-import { useDispatch, useSelector } from 'react-redux';
+import { useSelector, useDispatch } from 'react-redux';
+import { setUsers, updateUser, deleteUser, fetchUsers } from './Action';
+import axios from 'axios';
 
 
 
@@ -42,7 +44,9 @@ const StyledTableRow = styled(TableRow)(({ theme }) => ({
 
 export default function UserList() {
   const users = useSelector((state) => state.users);
+  console.log(users);
   const dispatch = useDispatch();
+  
   const [currentPage, setCurrentPage] = useState(1);
   const [confirmationDialogOpen, setConfirmationDialogOpen] = useState(false);
   const [editDialogOpen, setEditDialogOpen] = useState(false);
@@ -61,27 +65,46 @@ export default function UserList() {
   const [snackbarOpen, setSnackbarOpen] = useState(false);
 
 
-  useEffect(() => {
-    async function fetchUsers() {
-      try {
-        const response = await axios.get('https://jsonplaceholder.typicode.com/users');
-    dispatch({ type: 'SET_USERS', payload: response.data });
-  } catch (error) {
-    console.log('Error:', error);
-  }
-};
+  // useEffect(() => {
+  //   async function fetchUsers() {
+  //     try {
+  //       const response = await axios.get(
+  //         'https://jsonplaceholder.typicode.com/users'
+  //       );
+  //       dispatch(setUsers(response.data));
+  //     } catch (error) {
+  //       console.log('Error:', error);
+  //     }
+  //   }
+  
+  //   fetchUsers();
+  // },);
 
-    fetchUsers();
-  }, [dispatch]);
+  // async function fetchUsers() {
+  //       try {
+  //         const response = await axios.get(
+  //           'https://jsonplaceholder.typicode.com/users'
+  //         );
+  //         dispatch(setUsers(response.data));
+  //       } catch (error) {
+  //         console.log('Error:', error);
+  //       }
+  //     }
 
   const handlePageChange = (event, page) => {
     setCurrentPage(page);
   };
 
+  const handlefetch = () =>{
+    dispatch(fetchUsers())
+
+  }
+
 
   const lastIndex = currentPage * usersPerPage;
   const firstIndex = lastIndex - usersPerPage;
   const displayedUsers = users.slice(firstIndex, lastIndex);
+  // const displayedUsers = []
 
   const handleEdit = (id) => {
     setSelectedUserId(id);
@@ -102,17 +125,19 @@ export default function UserList() {
   const handleDelete = (id) => {
     setSelectedUserId(id);
     setConfirmationDialogOpen(true);
+    // dispatch(deleteUser(id));
   };
+  
 
   const handleConfirmationDialogClose = () => {
     setConfirmationDialogOpen(false);
   };
 
   const handleConfirmationDialogConfirm = () => {
-    dispatch({ type: 'DELETE_USER', payload: selectedUserId });
+    dispatch(deleteUser(selectedUserId));
     setConfirmationDialogOpen(false);
     console.log(selectedUserId);
-  };
+  };  
 
   const handleEditDialogClose = () => {
     setEditDialogOpen(false);
@@ -128,17 +153,21 @@ export default function UserList() {
     });
   };
   const handleEditDialogSave = () => {
-    const updatedUsers = {
+    const updatedUser = {
       id: selectedUserId,
-      updatedUsers: {
-        ...editedUser,
-        company: {
-          ...editedUser.company,
-          name: editedUser.company,
-        },
+      name: editedUser.name,
+      email: editedUser.email,
+      address: {
+        street: editedUser.address.street,
+        city: editedUser.address.city,
+      },
+      phone: editedUser.phone,
+      company: {
+        ...editedUser.company,
+        name: editedUser.company,
       },
     };
-    dispatch({ type: 'UPDATE_USER', payload: updatedUsers });
+    dispatch(updateUser(updatedUser));
     setEditDialogOpen(false);
     setEditedUser({
       name: '',
@@ -162,6 +191,8 @@ export default function UserList() {
   return (
     <div className='containerPadding'>
       <h1>User List</h1>
+      {/* <Button variant='contained' color='primary' onClick={fetchUsers}>Fetch API</Button><br /><br /> */}
+      <Button variant='contained' color='primary' onClick={handlefetch}>Fetch API</Button><br /><br /> 
       <TableContainer component={Paper}>
         <CustomTable className='containerTable'>
           <TableHead>
